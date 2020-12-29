@@ -7,6 +7,10 @@ To initialize KapiApi call KapiapiInit() and KapiapiDeinit() respectively. Like 
 
 ```
 	if(!KapiapiInit())
-	printf("%i",KapiapiGetLastError());
+		printf("%i",KapiapiGetLastError());
 	KapiapiDeinit();
 ```
+
+It's important to mention, that most of functions (excluding ones like KapiapiDeinit()) return a BOOL of value 1 if they succeeded or of value 0 if they failed. I reccomend exiting or printing error when it occurs, because program might crash in latter function and error might be hard to track.
+
+#Getting User Data
