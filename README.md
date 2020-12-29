@@ -5,7 +5,7 @@ C wrapper around minecraftmapy.pl api. Tutorial and code samples below:
 
 To initialize KapiApi call KapiapiInit() and KapiapiDeinit() respectively. Like such:
 
-```
+```c
 	if(!KapiapiInit())
 		printf("%i",KapiapiGetLastError());
 	KapiapiDeinit();
@@ -14,7 +14,7 @@ To initialize KapiApi call KapiapiInit() and KapiapiDeinit() respectively. Like 
 It's important to mention, that most of functions (excluding ones like KapiapiDeinit()) return a BOOL of value 1 if they succeeded or of value 0 if they failed. I reccomend exiting or printing error when it occurs, because program might crash in latter function and error might be hard to track.
 
 # Getting User Data
-```
+```c
 	KAPIAPI_USERDATA user_data;
 	KapiapiGetUserData(L"CzekotPL", &user_data);
 	KAPIAPI_USER user;
