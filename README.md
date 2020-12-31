@@ -40,3 +40,7 @@ KAPIAPI_USERDATA contains raw JSON data fetched from the API. KAPIAPI_USER depen
 KapiapiGetUserMapId() function gets subpage directory of user's maps and returns it. It's not expected to fail, therefore it doesn't return a BOOL like other KAPIAPI functions. KAPIAPI_MAPDATA is similliar to KAPIAPI_USERDATA, but for maps. It stores raw JSON string fetched from the server. We get it using KapiapiGetMapData, just like we got KAPIAPI_USERDATA using KapiapiGetUserData. Big difference between KAPIAPI_USER and KAPIAPI_MAP lies in parsing functions. One user can have multiple maps, therefore we also need to get map count and instead of allocating KAPIAPI_MAP ourselves, on the stack, we pass pointer to a KAPIAPI_MAP* which will be then filled with contents ofmaps. As always, we pass data by const KAPIAPI_MAPDATA*.
 
 You might have noticed that KapiapiGetUserMapId takes additional parameter (i.e. WCHAR**). That's because it allocates new memory, which has to be freed after is used (KapiapiGetMapData in most cases), as this is C and no automatic garbage collection or RAII is present.
+
+# String Issues
+
+Because JSON data is ASCII and not unicode string, to use characters such as ś, ć, ź, ó etc. we need to convert it to unicode string. To do that we use json.h function RawToUnicode(). Don't forget to free! 
