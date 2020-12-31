@@ -1,4 +1,7 @@
 #pragma once
+#define KAPIAPI_NULLABLE
+
+
 #ifdef _WIN32
 #include <Windows.h>
 #include <winhttp.h>
@@ -43,17 +46,95 @@ typedef enum KapiapiErrors
 	KAPIAPI_ERR_UNABLE_TO_READ_DATA
 } KAPIAPIERR;
 
+typedef struct Slice
+{
+	STRING ptr;
+	SIZEPARAM length;
+} KAPIAPI_SLICE;
+
+typedef struct KapiapiMapData
+{
+	U8* bytes;
+	SIZEPARAM size;
+} KAPIAPI_MAPDATA, *KAPIAPI_PMAPDATA;
+
+typedef struct KapiapiMapAuthor
+{
+	KAPIAPI_SLICE username;
+	KAPIAPI_SLICE endpoint;
+} KAPIAPI_MAPAUTHOR;
+
+typedef struct KapiapiMapInfo
+{
+	KAPIAPI_SLICE title;
+	KAPIAPI_SLICE description;
+	KAPIAPI_SLICE download_url;
+	KAPIAPI_SLICE created_at;
+	KAPIAPI_SLICE accepted_at;
+	KAPIAPI_SLICE updated_at;
+} KAPIAPI_MAPINFO;
+
+typedef struct KapiapiMapCategory
+{
+	U64 id;
+	KAPIAPI_SLICE name;
+} KAPIAPI_CATEGORY;
+
+
+typedef struct KapiapiMapMinecraftVersion
+{
+	U64 id;
+	KAPIAPI_SLICE name;
+	BOOL is_snapshot;
+	BOOL is_other;
+	BOOL is_bedrock;
+} KAPIAPI_MAPVERSION;
+
+typedef struct KapiapiMapImages
+{
+	U64 count;
+	KAPIAPI_SLICE images[3];
+} KAPIAPI_MAPIMAGES;
+
+typedef struct KapiapiMapStats
+{
+	U64 diamond_count;
+	U64 download_count;
+	U64 comment_count;
+} KAPIAPI_MAPSTATS;
+
+typedef struct KapiapiMapEndpoints
+{
+	KAPIAPI_SLICE map;
+	KAPIAPI_SLICE comments;
+} KAPIAPI_MAPENDPOINTS;
+
+typedef struct KapiapiMap
+{
+	U64 id;
+	KAPIAPI_SLICE code;
+	KAPIAPI_SLICE code_old;
+	KAPIAPI_SLICE url;
+	KAPIAPI_MAPAUTHOR author;
+	KAPIAPI_MAPINFO info;
+	KAPIAPI_CATEGORY category;
+	KAPIAPI_MAPVERSION minecraft_version;
+	KAPIAPI_MAPIMAGES images;
+	KAPIAPI_MAPSTATS stats;
+	KAPIAPI_MAPENDPOINTS endpoints;
+} KAPIAPI_MAP, *KAPIAPI_PMAP;
+
 typedef struct KapiapiUserData
 {
 	U8* bytes;
 	SIZEPARAM size;
 } KAPIAPI_USERDATA, *KAPIAPI_PUSERDATA;
 
-typedef struct Slice
+typedef struct WSlice
 {
-	STRING ptr;
-	SIZEPARAM length; 
-} KAPIAPI_SLICE;
+	WSTRING ptr;
+	SIZEPARAM length;
+} KAPIAPI_WSLICE;
 
 typedef enum KapiapiRoles
 {
@@ -75,7 +156,6 @@ typedef struct KapiapiBan
 	KAPIAPI_SLICE reason;
 	BOOL is_permament;
 	KAPIAPI_SLICE expires_at;
-
 } KAPIAPI_BAN;
 
 typedef struct KapiapiUserInfo
@@ -99,6 +179,11 @@ typedef struct KapiapiUserStats
 	U64 follower_count;
 } KAPIAPI_USERSTATS;
 
+typedef struct KapiapiUserEndpoint
+{
+	KAPIAPI_SLICE maps;
+} KAPIAPI_USERENDPOINT;
+
 typedef struct KapiapiUser
 {
 	U64 id;
@@ -106,6 +191,7 @@ typedef struct KapiapiUser
 	KAPIAPI_USERINFO info;
 	KAPIAPI_USERSTATS stats;
 	KAPIAPI_BAN ban;
+	KAPIAPI_USERENDPOINT endpoint;
 } KAPIAPI_USER, *KAPIAPI_PUSER;
 
 
@@ -122,4 +208,10 @@ KAPIAPI VOID KapiapiDeinit(VOID);
 //Gets KAPIAPI_USERDATA from provided username, which is case sensitive, returns 0 if operation failed
 KAPIAPI BOOL KapiapiGetUserData(WSTRING user_name, KAPIAPI_PUSERDATA user_data_ptr);
 //Parses KAPIAPI_USER from provided KAPIAPI_USERDATA
-KAPIAPI BOOL KapiapiParseUserData(KAPIAPI_PUSER* user_ptr, const KAPIAPI_USERDATA* user_data);
+KAPIAPI BOOL KapiapiParseUserData(KAPIAPI_PUSER user_ptr, const KAPIAPI_USERDATA* user_data);
+//Gets KAPIAPI_MAPDATA from provided map id, returns 0 if operation failed
+KAPIAPI BOOL KapiapiGetMapData(KAPIAPI_WSLICE map_id, KAPIAPI_PMAPDATA map_data_ptr);
+//Gets KAPIAPI_WSLICE map id from user, causes no errors
+KAPIAPI KAPIAPI_WSLICE KapiapiGetUserMapId(KAPIAPI_PUSER user_ptr, WCHAR** memory_ptr);
+//
+KAPIAPI BOOL KapiapiEnumerateMapData(SIZEPARAM* size_ptr, KAPIAPI_NULLABLE KAPIAPI_PMAP maps,const KAPIAPI_MAPDATA* map_data);

@@ -1,5 +1,127 @@
 #include "json.h"
 
+//thanks Stackoverflow :)
+int ipow(int base, int exp)
+{
+	int result = 1;
+	for (;;)
+	{
+		if (exp & 1)
+			result *= base;
+		exp >>= 1;
+		if (!exp)
+			break;
+		base *= base;
+	}
+
+	return result;
+}
+
+
+WCHAR* RawToUnicode(SLICE s)
+{
+	const SIZEPARAM allocation_size = (s.length + 1) * sizeof(wchar_t*);
+	WCHAR* wc = malloc(allocation_size);
+	memset(wc, 0, allocation_size);
+
+	typedef enum MODE
+	{
+		FORMAT_MODE_ESC,
+		FORMAT_MODE_NORMAL,
+		FORMAT_MODE_UNICODE
+	} FORMAT_MODE;
+
+	FORMAT_MODE mode = FORMAT_MODE_NORMAL;
+
+	//I didn't want to do fancy stuff, so I just use 3 shared variables
+	SIZEPARAM counter = 0;
+	WCHAR counter1 = 0;
+	SIZEPARAM counter2 = 0;
+
+	SIZEPARAM r = 0;
+	SIZEPARAM w = 0;
+	for (; r < s.length && w < s.length; (++r, ++w))
+	{
+		const char ch = s.ptr[r];
+		const WCHAR converted = ch;
+
+		switch (mode)
+		{
+		case FORMAT_MODE_NORMAL:
+			
+			if (ch == '\\')
+			{
+				mode = FORMAT_MODE_ESC;
+			}
+			else
+			{
+				wc[w] = converted;
+			}
+			break;
+		case FORMAT_MODE_ESC:			
+			if (ch == 'u')
+			{
+				mode = FORMAT_MODE_UNICODE;
+				counter = 0;
+				counter1 = 0;
+			}
+			else if (ch == 'n')
+			{
+				--w;
+				wc[w] = '\n';
+			}
+			else if (ch == 'r')
+			{
+				--w;
+				wc[w] = '\r';
+			}
+			else if (ch == 'b')
+			{
+				--w;
+				wc[w] = '\b';
+			}
+			else
+			{
+				--w;
+				wc[w] = converted;
+			}
+
+			mode = FORMAT_MODE_NORMAL;
+			break;
+		case FORMAT_MODE_UNICODE:
+		{
+			++counter;
+			char val = '\0';
+			if (ch <= 'z' && ch >= 'a')
+			{
+				val = (ch - 'a') + 10;
+			}
+			else if (ch <= 'Z' && ch >= 'A')
+			{
+				val = (ch - 'A') + 10;
+			}
+			else
+			{
+				val = (ch - '0');
+			}
+
+			counter1 += val * ipow(16, (4 - counter));
+			if (counter >= 4)
+			{
+				w -= 5; //back to \ character
+				wc[w] = counter1;
+				mode = FORMAT_MODE_NORMAL;
+			}
+		}
+			break;
+		}
+	}
+
+	wc[w] = 0;
+
+	return wc;
+}
+
 static JSONNODE* Add(JSONNODEARRAY* node_array, JSONNODE node)
 {
 	SIZEPARAM newsize = sizeof(node) + node_array->size;
@@ -164,7 +286,10 @@ JSONERROR JsonParse(_STRING str)
 					top_node = top_node->previous;
 				}
 				else if (c == '\\')
+				{
+					top_node->string.string_slice.length++;
 					state = PARSER_STATE_ESCAPE_STRING;
+				}
 				else
 					top_node->string.string_slice.length++;
 				break;
@@ -461,7 +586,7 @@ void PrintJsonTree(const JSONNODE* node, I32 depth)
 /*
 int main()
 {
-	char jsondata[1024] = {0};
+	char jsondata[1024];
 	FILE* file = fopen("test.json","r");
 	fread(jsondata,1,1024,file);
 	fclose(file);

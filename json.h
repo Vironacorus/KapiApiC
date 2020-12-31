@@ -20,6 +20,7 @@ typedef int16_t I16;
 typedef int32_t I32;
 typedef int64_t I64;
 typedef size_t SIZEPARAM;
+typedef wchar_t WCHAR;
 #ifndef VOID //<Windows.h> defines VOID as void
 typedef void VOID;
 #endif
@@ -135,5 +136,6 @@ typedef struct JsonError
 
 JSONERROR JsonParse(_STRING str);
 void PrintJsonTree(const JSONNODE* node, I32 depth);
+WCHAR* RawToUnicode(SLICE s);
 
 #define DebugJson(N) PrintJsonTree(N,0)
