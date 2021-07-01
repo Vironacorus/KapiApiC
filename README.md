@@ -1,4 +1,5 @@
 # KapiApiC
+(this isn't serious and doesn't actually work that well, please don't use it xD)
 C wrapper around minecraftmapy.pl api. Tutorial and code samples below:
 
 # Initialization And Deinitialization
